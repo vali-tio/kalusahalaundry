@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kalkulator Laundry — v2</title>
+  <style>
+    :root{ --accent:#06b6d4; --muted:#6b7280; --bg:#f7fafc; --card:#ffffff; --text:#0f172a; --danger:#dc2626; --success:#16a34a }
+    [data-theme="dark"]{ --bg:#071126; --card:#0b1220; --text:#e6eef6; --muted:#94a3b8 }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;padding:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; background:var(--bg); color:var(--text)}
+    .wrap{max-width:920px;margin:14px auto;padding:14px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    h1{font-size:18px;margin:0}
+    .controls{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
+    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+    input[type=number], select{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(0,0,0,0.06);background:var(--card);color:var(--text)}
+    .card{background:var(--card);border-radius:12px;padding:12px;border:1px solid rgba(0,0,0,0.04);box-shadow:0 6px 18px rgba(2,6,23,0.04);}
+    .actions{display:flex;gap:8px;margin-top:12px}
+    .btn{flex:1;padding:10px;border-radius:10px;border:none;background:var(--accent);color:#04202a;font-weight:700;cursor:pointer}
+    .btn.ghost{background:transparent;border:1px solid rgba(0,0,0,0.06);color:var(--text)}
+    .results{margin-top:14px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+    .result-block{padding:12px;border-radius:10px}
+    .small{font-size:13px;color:var(--muted)}
+    .big{font-size:18px;font-weight:700;margin-top:6px}
+    .full{grid-column:1/ -1}
+    .sim-list{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
+    .sim-item{padding:10px;border-radius:10px}
+    .negative{color:var(--danger);font-weight:700}
+    .positive{color:var(--success);font-weight:700}
+    footer{margin-top:18px;font-size:13px;color:var(--muted)}
+
+    @media(max-width:720px){
+      .controls{grid-template-columns:1fr}
+      .results{grid-template-columns:1fr}
+      .sim-list{grid-template-columns:1fr}
+      header{flex-direction:column;align-items:flex-start;gap:8px}
+      .actions{flex-direction:column}
+    }
+  </style>
+</head>
+<body data-theme="dark">
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Kalkulator Laundry — Mobile Friendly</h1>
+        <div class="small">Isi asumsi lalu tekan <strong>Hitung</strong>. Data tersimpan otomatis di perangkat.</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button id="themeBtn" class="btn ghost" style="padding:8px 10px">Toggle Theme</button>
+      </div>
+    </header>
+
+    <div class="card" style="margin-top:12px">
+      <div class="controls">
+        <div>
+          <label>Harga cuci+setrika biasa (Rp/kg)</label>
+          <input id="priceNormal" type="number" value="6000">
+        </div>
+        <div>
+          <label>Kg biasa / hari</label>
+          <input id="kgNormal" type="number" value="30">
+        </div>
+
+        <div>
+          <label>Harga cuci+setrika ekspres (Rp/kg)</label>
+          <input id="priceExpress" type="number" value="8000">
+        </div>
+        <div>
+          <label>Kg ekspres / hari</label>
+          <input id="kgExpress" type="number" value="0">
+        </div>
+
+        <div>
+          <label>Harga bed cover (Rp/item)</label>
+          <input id="priceBedCover" type="number" value="20000">
+        </div>
+        <div>
+          <label>Jumlah bed cover / hari</label>
+          <input id="qtyBedCover" type="number" value="0">
+        </div>
+
+        <div>
+          <label>Harga selimut (Rp/item)</label>
+          <input id="priceSelimut" type="number" value="15000">
+        </div>
+        <div>
+          <label>Jumlah selimut / hari</label>
+          <input id="qtySelimut" type="number" value="0">
+        </div>
+
+        <div>
+          <label>Sewa tempat / bulan (Rp)</label>
+          <input id="rent" type="number" value="1000000">
+        </div>
+        <div>
+          <label>Listrik + air / bulan (Rp)</label>
+          <input id="utils" type="number" value="500000">
+        </div>
+
+        <div>
+          <label>Bahan habis pakai / bulan (Rp)</label>
+          <input id="materials" type="number" value="1000000">
+        </div>
+        <div>
+          <label>Gaji karyawan / bulan (Rp)</label>
+          <input id="salary" type="number" value="2000000">
+        </div>
+
+        <div>
+          <label>Setrika throughput (kg / jam)</label>
+          <input id="throughput" type="number" value="20">
+        </div>
+        <div>
+          <label>Konsumsi gas setrika (kg gas / jam)</label>
+          <input id="gasKgPerHour" type="number" value="1" step="0.01">
+        </div>
+
+        <div>
+          <label>Harga tabung LPG 3 kg (Rp)</label>
+          <input id="price3kg" type="number" value="20000">
+        </div>
+        <div>
+          <label>Hari aktif / bulan</label>
+          <input id="daysPerMonth" type="number" value="30">
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="calcBtn" class="btn">Hitung</button>
+        <button id="resetBtn" class="btn ghost">Reset</button>
+      </div>
+
+      <div id="resultsArea" class="results" aria-live="polite" style="margin-top:12px"></div>
+    </div>
+
+    <footer>
+      Tip: semua input tersimpan di perangkat menggunakan localStorage.
+    </footer>
+  </div>
+
+  <script>
+    const fmt = n => Number(n).toLocaleString('id-ID')
+
+    function readValues(){
+      return {
+        priceNormal: +document.getElementById('priceNormal').value || 0,
+        kgNormal: +document.getElementById('kgNormal').value || 0,
+        priceExpress: +document.getElementById('priceExpress').value || 0,
+        kgExpress: +document.getElementById('kgExpress').value || 0,
+        priceBedCover: +document.getElementById('priceBedCover').value || 0,
+        qtyBedCover: +document.getElementById('qtyBedCover').value || 0,
+        priceSelimut: +document.getElementById('priceSelimut').value || 0,
+        qtySelimut: +document.getElementById('qtySelimut').value || 0,
+        rent: +document.getElementById('rent').value || 0,
+        utils: +document.getElementById('utils').value || 0,
+        materials: +document.getElementById('materials').value || 0,
+        salary: +document.getElementById('salary').value || 0,
+        throughput: +document.getElementById('throughput').value || 1,
+        gasKgPerHour: +document.getElementById('gasKgPerHour').value || 0,
+        price3kg: +document.getElementById('price3kg').value || 0,
+        daysPerMonth: +document.getElementById('daysPerMonth').value || 30
+      }
+    }
+
+    function compute(vals){
+      const gasPricePerKg = vals.price3kg / 3
+      const gasPerKg = vals.gasKgPerHour / Math.max(1, vals.throughput)
+      const gasCostPerKg = gasPerKg * gasPricePerKg
+
+      const revenueNormal = vals.priceNormal * vals.kgNormal * vals.daysPerMonth
+      const revenueExpress = vals.priceExpress * vals.kgExpress * vals.daysPerMonth
+      const revenueBedCover = vals.priceBedCover * vals.qtyBedCover * vals.daysPerMonth
+      const revenueSelimut = vals.priceSelimut * vals.qtySelimut * vals.daysPerMonth
+      const revenuePerMonth = revenueNormal + revenueExpress + revenueBedCover + revenueSelimut
+
+      const gasCostPerMonth = gasCostPerKg * (vals.kgNormal + vals.kgExpress) * vals.daysPerMonth
+      const fixedCosts = vals.rent + vals.utils + vals.materials + vals.salary
+      const totalCosts = fixedCosts + gasCostPerMonth
+      const profit = revenuePerMonth - totalCosts
+
+      const marginPerKg = vals.priceNormal - gasCostPerKg
+      let bepKgPerDay = Infinity
+      if(marginPerKg > 0) bepKgPerDay = Math.ceil( fixedCosts / (marginPerKg * vals.daysPerMonth) )
+
+      return { revenueNormal, revenueExpress, revenueBedCover, revenueSelimut, revenuePerMonth, gasCostPerKg, gasCostPerMonth, fixedCosts, totalCosts, profit, bepKgPerDay }
+    }
+
+    function renderMain(vals, res){
+      const area = document.getElementById('resultsArea')
+      area.innerHTML = ''
+      const blocks = [
+        {title:'Pendapatan kiloan biasa', value:'Rp '+fmt(res.revenueNormal)},
+        {title:'Pendapatan kiloan ekspres', value:'Rp '+fmt(res.revenueExpress)},
+        {title:'Pendapatan bed cover', value:'Rp '+fmt(res.revenueBedCover)},
+        {title:'Pendapatan selimut', value:'Rp '+fmt(res.revenueSelimut)},
+        {title:'Total pendapatan / bulan', value:'Rp '+fmt(res.revenuePerMonth)},
+        {title:'Biaya gas / bulan', value:'Rp '+fmt(res.gasCostPerMonth), small:`Gas per kg ≈ Rp ${fmt(Math.round(res.gasCostPerKg))}`},
+        {title:'Biaya tetap / bulan', value:'Rp '+fmt(res.fixedCosts)},
+        {title:'Total biaya / bulan', value:'Rp '+fmt(res.totalCosts)}
+      ]
+
+      blocks.forEach(b=>{
+        const div=document.createElement('div'); div.className='card result-block'
+        div.innerHTML=`<div class="small">${b.title}</div><div class="big">${b.value}</div>${b.small?'<div class="small">'+b.small+'</div>':''}`
+        area.appendChild(div)
+      })
+
+      const profitDiv=document.createElement('div'); profitDiv.className='card result-block full'
+      const profitClass=res.profit>=0?'positive':'negative'
+      profitDiv.innerHTML=`<div class="small">Laba / bulan</div><div class="big ${profitClass}">Rp ${fmt(res.profit)}</div><div class="small">Break-even ≈ ${isFinite(res.bepKgPerDay)?res.bepKgPerDay+' kg/hari':'tidak tercapai'}</div>`
+      area.appendChild(profitDiv)
+    }
+
+    function saveValues(){
+      const vals=readValues()
+      localStorage.setItem('laundry_vals', JSON.stringify(vals))
+    }
+    function loadValues(){
+      const saved=localStorage.getItem('laundry_vals')
+      if(!saved) return
+      try{
+        const vals=JSON.parse(saved)
+        Object.keys(vals).forEach(k=>{
+          if(document.getElementById(k)) document.getElementById(k).value=vals[k]
+        })
+      }catch(e){}
+    }
+
+    function doCompute(){
+      const vals=readValues()
+      saveValues()
+      const res=compute(vals)
+      renderMain(vals,res)
+    }
+
+    document.getElementById('calcBtn').addEventListener('click', doCompute)
+    document.getElementById('resetBtn').addEventListener('click', ()=>{ localStorage.removeItem('laundry_vals'); location.reload() })
+
+    // Theme toggle
+    const themeBtn=document.getElementById('themeBtn')
+    function setTheme(dark){
+      document.body.setAttribute('data-theme', dark?'dark':'light')
+      themeBtn.textContent=dark?'Light':'Dark'
+      localStorage.setItem('laundry_theme_dark',dark?'1':'0')
+    }
+    themeBtn.addEventListener('click',()=> setTheme(localStorage.getItem('laundry_theme_dark')!=='1'))
+    setTheme(localStorage.getItem('laundry_theme_dark')==='1')
+
+    // Init
+    loadValues()
+    doCompute()
+  </script>
+</body>
+</html>
